@@ -475,9 +475,11 @@ class QueryContextProcessor:
         if not (chart := ChartDAO.find_by_id(annotation_layer["value"])):
             raise QueryObjectValidationError(
                 _(
-                    f"""Chart with ID {annotation_layer["value"]} (referenced by
-                    annotation layer '{annotation_layer["name"]}') was not found.
-                    Please verify that the chart exists and is accessible."""
+                    "Chart with ID %(chart_id)s (referenced by"
+                    " annotation layer '%(layer_name)s') was not found."
+                    " Please verify that the chart exists and is accessible.",
+                    chart_id=annotation_layer["value"],
+                    layer_name=annotation_layer["name"],
                 )
             )
 
@@ -486,10 +488,12 @@ class QueryContextProcessor:
                 if not chart.datasource:
                     raise QueryObjectValidationError(
                         _(
-                            f"""The dataset for chart ID {chart.id} (referenced by
-                            annotation layer '{annotation_layer["name"]}') was
-                            not found. Please check that the dataset exists and
-                            is accessible."""
+                            "The dataset for chart ID %(chart_id)s (referenced by"
+                            " annotation layer '%(layer_name)s') was"
+                            " not found. Please check that the dataset exists and"
+                            " is accessible.",
+                            chart_id=chart.id,
+                            layer_name=annotation_layer["name"],
                         )
                     )
 
@@ -508,10 +512,12 @@ class QueryContextProcessor:
             if not (query_context := chart.get_query_context()):
                 raise QueryObjectValidationError(
                     _(
-                        f"""The query context for chart ID {chart.id} (referenced
-                        by annotation layer '{annotation_layer["name"]}') was not found.
-                        Please ensure the chart is properly configured and has a valid
-                        query context."""
+                        "The query context for chart ID %(chart_id)s"
+                        " (referenced by annotation layer '%(layer_name)s')"
+                        " was not found. Please ensure the chart is properly"
+                        " configured and has a valid query context.",
+                        chart_id=chart.id,
+                        layer_name=annotation_layer["name"],
                     )
                 )
 
