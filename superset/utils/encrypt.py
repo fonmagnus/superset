@@ -174,8 +174,12 @@ class SecretsMigrator:
         column_names: list[str],
         table_name: str,
     ) -> Row:
-        cols = ",".join(pk_columns + column_names)
-        return conn.execute(f"SELECT {cols} FROM {table_name}")  # noqa: S608
+        preparer = conn.dialect.identifier_preparer
+        cols = ", ".join(
+            preparer.quote_identifier(c) for c in pk_columns + column_names
+        )
+        quoted_table = preparer.quote_identifier(table_name)
+        return conn.execute(text(f"SELECT {cols} FROM {quoted_table}"))  # noqa: S608
 
     def _re_encrypt_row(
         self,
@@ -263,12 +267,19 @@ class SecretsMigrator:
         if not re_encrypted_columns:
             return
 
-        set_cols = ",".join(f"{name} = :{name}" for name in re_encrypted_columns)
-        where_clause = " AND ".join(f"{pk} = :_pk_{pk}" for pk in pk_columns)
+        preparer = conn.dialect.identifier_preparer
+        quoted_table = preparer.quote_identifier(table_name)
+        set_cols = ", ".join(
+            f"{preparer.quote_identifier(name)} = :{name}"
+            for name in re_encrypted_columns
+        )
+        where_clause = " AND ".join(
+            f"{preparer.quote_identifier(pk)} = :_pk_{pk}" for pk in pk_columns
+        )
         pk_bind = {f"_pk_{pk}": row[pk] for pk in pk_columns}
         conn.execute(
             text(
-                f"UPDATE {table_name} SET {set_cols} WHERE {where_clause}"  # noqa: S608
+                f"UPDATE {quoted_table} SET {set_cols} WHERE {where_clause}"  # noqa: S608
             ),
             **pk_bind,
             **re_encrypted_columns,
