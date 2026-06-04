@@ -617,15 +617,15 @@ class WebDriverSelenium(WebDriverProxy):
                 ).until(EC.invisibility_of_element(modal))
 
                 # Use HTML so that error messages are shown in the same style (color)
-                error_as_html = err_msg_div.get_attribute("innerHTML").replace(
-                    "'", "\\'"
-                )
+                error_as_html = err_msg_div.get_attribute("innerHTML")
 
                 try:
                     # Even if some errors can't be updated in the screenshot,
                     # keep all the errors in the server log and do not fail the loop
                     driver.execute_script(
-                        f"arguments[0].innerHTML = '{error_as_html}'", alert_div
+                        "arguments[0].innerHTML = arguments[1]",
+                        alert_div,
+                        error_as_html,
                     )
                 except WebDriverException:
                     logger.exception("Failed to update error messages using alert_div")
