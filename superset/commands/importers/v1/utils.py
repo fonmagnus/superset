@@ -45,7 +45,10 @@ logger = logging.getLogger(__name__)
 def remove_root(file_path: str) -> str:
     """Remove the first directory of a path"""
     full_path = PurePosixPath(file_path)
-    relative_path = PurePosixPath(*full_path.parts[1:])
+    relative_parts = full_path.parts[1:]
+    if not relative_parts:
+        raise ValueError(f"Cannot remove root from single-component path: {file_path}")
+    relative_path = PurePosixPath(*relative_parts)
     return str(relative_path)
 
 
