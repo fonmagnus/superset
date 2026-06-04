@@ -135,10 +135,15 @@ class BaseReportState:
         Update the report schedule type and channels for all slack recipients to v2.
         V2 uses ids instead of names for channels.
         """
+        mutated_recipients: list[
+            tuple[ReportRecipients, str]
+        ] = []  # (recipient, original_config_json)
         try:
             for recipient in self._report_schedule.recipients:
                 if recipient.type == ReportRecipientType.SLACK:
+                    original_config = recipient.recipient_config_json
                     recipient.type = ReportRecipientType.SLACKV2
+                    mutated_recipients.append((recipient, original_config))
                     slack_recipients = json.loads(recipient.recipient_config_json)
                     # V1 method allowed to use leading `#` in the channel name
                     channel_names = (slack_recipients["target"] or "").replace("#", "")
@@ -169,8 +174,10 @@ class BaseReportState:
                         }
                     )
         except Exception as ex:
-            # Revert to v1 to preserve configuration (requires manual fix)
-            recipient.type = ReportRecipientType.SLACK
+            # Revert all mutated recipients to v1 to preserve configuration
+            for mutated_recipient, original_config in mutated_recipients:
+                mutated_recipient.type = ReportRecipientType.SLACK
+                mutated_recipient.recipient_config_json = original_config
             msg = f"Failed to update slack recipients to v2: {str(ex)}"
             logger.exception(msg)
             raise UpdateFailedError(msg) from ex
