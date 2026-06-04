@@ -154,7 +154,7 @@ class SqlExecutionResultsCommand(BaseCommand):
                     message=__(
                         "Data could not be deserialized from the results backend. The "
                         "storage format might have changed, rendering the old data "
-                        "stake. You need to re-run the original query."
+                        "stale. You need to re-run the original query."
                     ),
                     error_type=SupersetErrorType.RESULTS_BACKEND_ERROR,
                     level=ErrorLevel.ERROR,
