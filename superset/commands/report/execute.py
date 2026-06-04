@@ -86,7 +86,7 @@ logger = logging.getLogger(__name__)
 
 
 class BaseReportState:
-    current_states: list[ReportState] = []
+    current_states: tuple[ReportState, ...] = ()
     initial: bool = False
 
     @logs_context()
@@ -884,7 +884,7 @@ class ReportNotTriggeredErrorState(BaseReportState):
     - Error
     """
 
-    current_states = [ReportState.NOOP, ReportState.ERROR]
+    current_states = (ReportState.NOOP, ReportState.ERROR)
     initial = True
 
     def next(self) -> None:  # noqa: C901
@@ -974,7 +974,7 @@ class ReportWorkingState(BaseReportState):
     - Working
     """
 
-    current_states = [ReportState.WORKING]
+    current_states = (ReportState.WORKING,)
 
     def next(self) -> None:
         if self.is_on_working_timeout():
@@ -1018,7 +1018,7 @@ class ReportSuccessState(BaseReportState):
     - Success
     """
 
-    current_states = [ReportState.SUCCESS, ReportState.GRACE]
+    current_states = (ReportState.SUCCESS, ReportState.GRACE)
 
     def next(self) -> None:
         if self._report_schedule.type == ReportScheduleType.ALERT:
