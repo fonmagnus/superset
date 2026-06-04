@@ -515,13 +515,18 @@ class QueryObject:  # pylint: disable=too-many-instance-attributes
         """
         logger.debug("post_processing: \n %s", pformat(self.post_processing))
         with event_logger.log_context(f"{self.__class__.__name__}.post_processing"):
+            allowed_ops: dict[str, Any] = {
+                name: getattr(pandas_postprocessing, name)
+                for name in pandas_postprocessing.__all__
+                if callable(getattr(pandas_postprocessing, name, None))
+            }
             for post_process in self.post_processing:
                 operation = post_process.get("operation")
                 if not operation:
                     raise InvalidPostProcessingError(
                         _("`operation` property of post processing object undefined")
                     )
-                if not hasattr(pandas_postprocessing, operation):
+                if operation not in allowed_ops:
                     raise InvalidPostProcessingError(
                         _(
                             "Unsupported post processing operation: %(operation)s",
@@ -529,5 +534,5 @@ class QueryObject:  # pylint: disable=too-many-instance-attributes
                         )
                     )
                 options = post_process.get("options", {})
-                df = getattr(pandas_postprocessing, operation)(df, **options)
+                df = allowed_ops[operation](df, **options)
             return df
