@@ -54,7 +54,7 @@ class QueryCacheManager:
     # pylint: disable=too-many-instance-attributes,too-many-arguments
     def __init__(
         self,
-        df: DataFrame = DataFrame(),  # noqa: B008
+        df: DataFrame | None = None,
         query: str = "",
         annotation_data: dict[str, Any] | None = None,
         applied_template_filters: list[str] | None = None,
@@ -70,7 +70,7 @@ class QueryCacheManager:
         sql_rowcount: int | None = None,
         queried_dttm: str | None = None,
     ) -> None:
-        self.df = df
+        self.df = df if df is not None else DataFrame()
         self.query = query
         self.annotation_data = {} if annotation_data is None else annotation_data
         self.applied_template_filters = applied_template_filters or []
