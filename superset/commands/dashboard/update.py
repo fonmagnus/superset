@@ -295,7 +295,7 @@ class UpdateDashboardColorsConfigCommand(UpdateDashboardCommand):
         DashboardDAO.update_colors_config(self._model, self._properties)
 
         if not self._mark_updated:
-            db.session.commit()  # pylint: disable=consider-using-transaction
+            db.session.flush()
             # restore the original changed_on value
             self._model.changed_on = original_changed_on
 
