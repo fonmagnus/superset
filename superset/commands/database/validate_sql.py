@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 import logging
-import re
 from typing import Any, Optional
 
 from flask import current_app as app
@@ -33,6 +32,7 @@ from superset.commands.database.exceptions import (
 from superset.daos.database import DatabaseDAO
 from superset.errors import ErrorLevel, SupersetError, SupersetErrorType
 from superset.exceptions import (
+    SupersetException,
     SupersetSyntaxErrorException,
     SupersetTemplateException,
 )
@@ -43,6 +43,20 @@ from superset.sql_validators.base import BaseSQLValidator
 from superset.utils import core as utils
 
 logger = logging.getLogger(__name__)
+
+
+def _is_client_error(ex: Exception) -> bool:
+    """Determine if an exception represents an HTTP client error (4xx)."""
+    if isinstance(ex, SupersetException) and 400 <= ex.status < 500:
+        return True
+    try:
+        from requests import HTTPError  # pylint: disable=import-outside-toplevel
+
+        if isinstance(ex, HTTPError) and ex.response is not None:
+            return 400 <= ex.response.status_code < 500
+    except ImportError:
+        pass
+    return False
 
 
 class ValidateSQLCommand(BaseCommand):
@@ -126,8 +140,8 @@ class ValidateSQLCommand(BaseCommand):
                 level=ErrorLevel.ERROR,
             )
 
-            # Return as a 400 if the database error message says we got a 4xx error
-            if re.search(r"([\W]|^)4\d{2}([\W]|$)", str(ex)):
+            # Return as a 400 if the exception carries a structured 4xx status
+            if _is_client_error(ex):
                 raise ValidatorSQL400Error(superset_error) from ex
             raise ValidatorSQLError(superset_error) from ex
 
