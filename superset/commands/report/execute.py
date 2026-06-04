@@ -464,10 +464,10 @@ class BaseReportState:
                 for url in urls
             ]
         try:
-            imges = []
+            images = []
             for screenshot in screenshots:
-                if imge := screenshot.get_screenshot(user=user):
-                    imges.append(imge)
+                if image := screenshot.get_screenshot(user=user):
+                    images.append(image)
             elapsed_seconds = (datetime.utcnow() - start_time).total_seconds()
             logger.info(
                 "Screenshot capture took %.2fs - execution_id: %s",
@@ -492,9 +492,9 @@ class BaseReportState:
             raise ReportScheduleScreenshotFailedError(
                 f"Failed taking a screenshot {str(ex)}"
             ) from ex
-        if not imges:
+        if not images:
             raise ReportScheduleScreenshotFailedError()
-        return imges
+        return images
 
     def _get_pdf(self) -> bytes:
         """
