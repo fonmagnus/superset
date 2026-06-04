@@ -858,30 +858,26 @@ def send_email_smtp(  # pylint: disable=invalid-name,too-many-arguments,too-many
     for fname in files or []:
         basename = os.path.basename(fname)
         with open(fname, "rb") as f:
-            msg.attach(
-                MIMEApplication(
-                    f.read(),
-                    Content_Disposition=f"attachment; filename='{basename}'",
-                    Name=basename,
-                )
+            attachment = MIMEApplication(f.read(), Name=basename)
+            attachment.add_header(
+                "Content-Disposition", "attachment", filename=basename
             )
+            msg.attach(attachment)
 
     # Attach any files passed directly
     for name, body in (data or {}).items():
-        msg.attach(
-            MIMEApplication(
-                body, Content_Disposition=f"attachment; filename='{name}'", Name=name
-            )
+        attachment = MIMEApplication(body, Name=name)
+        attachment.add_header(
+            "Content-Disposition", "attachment", filename=name
         )
+        msg.attach(attachment)
 
     for name, body_pdf in (pdf or {}).items():
-        msg.attach(
-            MIMEApplication(
-                body_pdf,
-                Content_Disposition=f"attachment; filename='{name}'",
-                Name=name,
-            )
+        attachment = MIMEApplication(body_pdf, Name=name)
+        attachment.add_header(
+            "Content-Disposition", "attachment", filename=name
         )
+        msg.attach(attachment)
 
     # Attach any inline images, which may be required for display in
     # HTML content (inline)
