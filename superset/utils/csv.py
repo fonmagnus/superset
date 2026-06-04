@@ -112,31 +112,31 @@ def get_chart_dataframe(
 
     result = json.loads(content.decode("utf-8"))
     # need to convert float value to string to show full long number
-    pd.set_option("display.float_format", lambda x: str(x))
-    df = pd.DataFrame.from_dict(result["result"][0]["data"])
+    with pd.option_context("display.float_format", lambda x: str(x)):
+        df = pd.DataFrame.from_dict(result["result"][0]["data"])
 
-    if df.empty:
-        return None
+        if df.empty:
+            return None
 
-    try:
-        # if any column type is equal to 2, need to convert data into
-        # datetime timestamp for that column.
-        if GenericDataType.TEMPORAL in result["result"][0]["coltypes"]:
-            for i in range(len(result["result"][0]["coltypes"])):
-                if result["result"][0]["coltypes"][i] == GenericDataType.TEMPORAL:
-                    df[result["result"][0]["colnames"][i]] = df[
-                        result["result"][0]["colnames"][i]
-                    ].astype("datetime64[ms]")
-    except BaseException as err:
-        logger.error(err)
+        try:
+            # if any column type is equal to 2, need to convert data into
+            # datetime timestamp for that column.
+            if GenericDataType.TEMPORAL in result["result"][0]["coltypes"]:
+                for i in range(len(result["result"][0]["coltypes"])):
+                    if result["result"][0]["coltypes"][i] == GenericDataType.TEMPORAL:
+                        df[result["result"][0]["colnames"][i]] = df[
+                            result["result"][0]["colnames"][i]
+                        ].astype("datetime64[ms]")
+        except BaseException as err:
+            logger.error(err)
 
-    # rebuild hierarchical columns and index
-    df.columns = pd.MultiIndex.from_tuples(
-        tuple(colname) if isinstance(colname, list) else (colname,)
-        for colname in result["result"][0]["colnames"]
-    )
-    df.index = pd.MultiIndex.from_tuples(
-        tuple(indexname) if isinstance(indexname, list) else (indexname,)
-        for indexname in result["result"][0]["indexnames"]
-    )
-    return df
+        # rebuild hierarchical columns and index
+        df.columns = pd.MultiIndex.from_tuples(
+            tuple(colname) if isinstance(colname, list) else (colname,)
+            for colname in result["result"][0]["colnames"]
+        )
+        df.index = pd.MultiIndex.from_tuples(
+            tuple(indexname) if isinstance(indexname, list) else (indexname,)
+            for indexname in result["result"][0]["indexnames"]
+        )
+        return df
