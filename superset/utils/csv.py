@@ -16,6 +16,7 @@
 # under the License.
 import logging
 import re
+import urllib.parse
 import urllib.request
 from typing import Any, Optional, Union
 from urllib.error import URLError
@@ -84,11 +85,36 @@ def df_to_escaped_csv(df: pd.DataFrame, **kwargs: Any) -> Any:
     return df.to_csv(escapechar="\\", **kwargs)
 
 
+def _validate_chart_url(chart_url: str) -> None:
+    """Validate that chart_url uses an allowed scheme and targets the Superset server.
+
+    Prevents SSRF by rejecting URLs with non-HTTP(S) schemes and URLs that
+    do not point at the configured WEBDRIVER_BASEURL host.
+    """
+    parsed = urllib.parse.urlparse(chart_url)
+    if parsed.scheme not in ("http", "https"):
+        raise URLError(
+            f"Invalid URL scheme '{parsed.scheme}': only http and https are allowed"
+        )
+
+    from superset import app  # pylint: disable=import-outside-toplevel
+
+    base_url = app.config.get("WEBDRIVER_BASEURL", "")
+    if base_url:
+        base_parsed = urllib.parse.urlparse(base_url)
+        if parsed.hostname != base_parsed.hostname:
+            raise URLError(
+                f"Chart URL host '{parsed.hostname}' does not match the "
+                f"configured WEBDRIVER_BASEURL host '{base_parsed.hostname}'"
+            )
+
+
 def get_chart_csv_data(
     chart_url: str, auth_cookies: Optional[dict[str, str]] = None
 ) -> Optional[bytes]:
     content = None
     if auth_cookies:
+        _validate_chart_url(chart_url)
         opener = urllib.request.build_opener()
         cookie_str = ";".join([f"{key}={val}" for key, val in auth_cookies.items()])
         opener.addheaders.append(("Cookie", cookie_str))
