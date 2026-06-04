@@ -169,10 +169,13 @@ class BaseReportState:
                         }
                     )
         except Exception as ex:
-            # Revert to v1 to preserve configuration (requires manual fix)
-            recipient.type = ReportRecipientType.SLACK
             msg = f"Failed to update slack recipients to v2: {str(ex)}"
             logger.exception(msg)
+            # Revert to v1 to preserve configuration (requires manual fix)
+            try:
+                recipient.type = ReportRecipientType.SLACK
+            except NameError:
+                pass
             raise UpdateFailedError(msg) from ex
 
     def create_log(self, error_message: Optional[str] = None) -> None:
