@@ -248,7 +248,7 @@ class QueryObject:  # pylint: disable=too-many-instance-attributes
                 )
                 value = kwargs[field.old_name]
                 if value:
-                    if hasattr(self.extras, field.new_name):
+                    if field.new_name in self.extras:
                         logger.warning(
                             "The field `%s` is already populated in "
                             "`extras`, replacing value with contents "
