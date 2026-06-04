@@ -1060,8 +1060,8 @@ def merge_extra_form_data(form_data: dict[str, Any]) -> None:  # noqa: C901
 
     # merge append extras
     for key in [key for key in EXTRA_FORM_DATA_APPEND_KEYS if key not in filter_keys]:
-        extra_value = getattr(extra_form_data, key, {})
-        form_value = getattr(form_data, key, {})
+        extra_value = extra_form_data.get(key, {})
+        form_value = form_data.get(key, {})
         form_value.update(extra_value)
         if form_value:
             form_data["key"] = extra_value
