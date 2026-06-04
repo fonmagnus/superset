@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from collections.abc import Iterator
 from contextlib import contextmanager
@@ -163,21 +164,23 @@ def debounce(duration: float | int = 0.1) -> Callable[..., Any]:
 
     def decorate(f: Callable[..., Any]) -> Callable[..., Any]:
         last: dict[str, Any] = {"t": None, "input": None, "output": None}
+        lock = threading.Lock()
 
         def wrapped(*args: Any, **kwargs: Any) -> Any:
-            now = time.time()
-            updated_hash = arghash(args, kwargs)
-            if (
-                last["t"] is None
-                or now - last["t"] >= duration
-                or last["input"] != updated_hash
-            ):
-                result = f(*args, **kwargs)
-                last["t"] = time.time()
-                last["input"] = updated_hash
-                last["output"] = result
-                return result
-            return last["output"]
+            with lock:
+                now = time.time()
+                updated_hash = arghash(args, kwargs)
+                if (
+                    last["t"] is None
+                    or now - last["t"] >= duration
+                    or last["input"] != updated_hash
+                ):
+                    result = f(*args, **kwargs)
+                    last["t"] = time.time()
+                    last["input"] = updated_hash
+                    last["output"] = result
+                    return result
+                return last["output"]
 
         return wrapped
 
