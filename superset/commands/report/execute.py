@@ -908,7 +908,7 @@ class ReportNotTriggeredErrorState(BaseReportState):
             self.update_report_schedule_and_log(
                 ReportState.SUCCESS, error_message=warning_message
             )
-        except (SupersetErrorsException, Exception) as first_ex:
+        except Exception as first_ex:
             error_message = str(first_ex)
             if isinstance(first_ex, SupersetErrorsException):
                 error_message = ";".join([error.message for error in first_ex.errors])
