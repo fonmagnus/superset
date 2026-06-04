@@ -1,0 +1,17 @@
+name: Devin Fix Trigger
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  trigger:
+    if: contains(github.event.issue.labels.*.name, 'devin-analyzer')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify backend
+        run: |
+          curl -sf -X POST "${{ vars.DEVIN_BACKEND_URL }}/api/issues/fix" \
+            -H "Content-Type: application/json" \
+            -H "X-Shared-Secret: ${{ secrets.DEVIN_SHARED_SECRET }}" \
+            -d "{\"github_issue_number\": ${{ github.event.issue.number }}}"
