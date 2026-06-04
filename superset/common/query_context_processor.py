@@ -47,6 +47,7 @@ from superset.utils.core import (
     DTTM_ALIAS,
     error_msg_from_exception,
     GenericDataType,
+    get_column_name,
     get_column_names_from_columns,
     get_column_names_from_metrics,
     is_adhoc_column,
@@ -156,12 +157,13 @@ class QueryContextProcessor:
             {
                 column_name: [
                     (
-                        str(query_obj.columns[idx])
-                        if not is_adhoc_column(query_obj.columns[idx])
-                        else cast(AdhocColumn, query_obj.columns[idx])["sqlExpression"]
+                        str(column)
+                        if not is_adhoc_column(column)
+                        else cast(AdhocColumn, column)["sqlExpression"]
                     ),
                 ]
-                for idx, column_name in enumerate(query_obj.column_names)
+                for column in query_obj.columns
+                if (column_name := get_column_name(column))
             }
         )
         label_map.update(
