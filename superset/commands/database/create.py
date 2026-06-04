@@ -18,7 +18,6 @@ import logging
 from functools import partial
 from typing import Any, Optional
 
-from flask import current_app as app
 from flask_appbuilder.models.sqla import Model
 from marshmallow import ValidationError
 
@@ -46,7 +45,6 @@ from superset.models.core import Database
 from superset.utils.decorators import on_error, transaction
 
 logger = logging.getLogger(__name__)
-stats_logger = app.config["STATS_LOGGER"]
 
 
 class CreateDatabaseCommand(BaseCommand):
