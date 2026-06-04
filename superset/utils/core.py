@@ -1539,13 +1539,28 @@ def create_ssl_cert_file(certificate: str) -> str:
     # pylint: disable=import-outside-toplevel
 
     cert_dir = app.config["SSL_CERT_PATH"]
-    path = cert_dir if cert_dir else tempfile.gettempdir()
-    path = os.path.join(path, filename)
+    dir_path = cert_dir if cert_dir else tempfile.gettempdir()
+    path = os.path.join(dir_path, filename)
     if not os.path.exists(path):
         # Validate certificate prior to persisting to temporary directory
         parse_ssl_cert(certificate)
-        with open(path, "w") as cert_file:
-            cert_file.write(certificate)
+        # Write to a temporary file and atomically rename to avoid a
+        # TOCTOU race where concurrent workers could truncate the file.
+        fd = None
+        tmp_path = None
+        try:
+            fd = tempfile.mkstemp(dir=dir_path, suffix=".crt.tmp")
+            tmp_path = fd[1]
+            with os.fdopen(fd[0], "w") as cert_file:
+                fd = None  # os.fdopen took ownership of the fd
+                cert_file.write(certificate)
+            os.replace(tmp_path, path)
+            tmp_path = None
+        finally:
+            if fd is not None:
+                os.close(fd[0])
+            if tmp_path is not None and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
     return path
 
 
