@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 import logging
-from abc import ABC
 from typing import Optional
 
 from flask import session
@@ -36,7 +35,7 @@ from superset.utils.core import DatasourceType, get_user_id
 logger = logging.getLogger(__name__)
 
 
-class DeleteFormDataCommand(BaseCommand, ABC):
+class DeleteFormDataCommand(BaseCommand):
     def __init__(self, cmd_params: CommandParameters):
         self._cmd_params = cmd_params
 
