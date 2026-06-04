@@ -22,6 +22,7 @@ import csv
 import io
 import logging
 import time
+import traceback
 from abc import abstractmethod
 from contextlib import contextmanager
 from typing import Any, Callable, Generator
@@ -233,8 +234,6 @@ class BaseStreamingCSVExportCommand(BaseCommand):
                         )
                     except Exception as e:
                         logger.error("Error in streaming CSV generator: %s", e)
-                        import traceback
-
                         logger.error("Traceback: %s", traceback.format_exc())
 
                         # Send error marker for frontend to detect
