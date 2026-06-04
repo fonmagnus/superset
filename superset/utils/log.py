@@ -82,7 +82,7 @@ def get_logger_from_status(
         "4": LoggerLevel.WARNING,
         "5": LoggerLevel.EXCEPTION,
     }
-    log_level = log_map[str(status)[0]]
+    log_level = log_map.get(str(status)[0], LoggerLevel.WARNING)
 
     return (getattr(logger, log_level), log_level)
 
