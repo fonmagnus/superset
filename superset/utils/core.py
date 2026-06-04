@@ -36,7 +36,7 @@ import traceback
 import uuid
 import warnings
 import zlib
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 from contextlib import closing, contextmanager
 from dataclasses import dataclass
 from datetime import timedelta
@@ -51,7 +51,6 @@ from timeit import default_timer
 from types import TracebackType
 from typing import (
     Any,
-    Callable,
     cast,
     NamedTuple,
     Optional,
@@ -691,6 +690,7 @@ class SigalrmTimeout:
     def __init__(self, seconds: int = 1, error_message: str = "Timeout") -> None:
         self.seconds = seconds
         self.error_message = error_message
+        self._previous_handler: signal.Handlers | Callable[..., Any] | None = None
 
     def handle_timeout(  # pylint: disable=unused-argument
         self, signum: int, frame: Any
@@ -706,7 +706,9 @@ class SigalrmTimeout:
     def __enter__(self) -> None:
         try:
             if threading.current_thread() == threading.main_thread():
-                signal.signal(signal.SIGALRM, self.handle_timeout)
+                self._previous_handler = signal.signal(
+                    signal.SIGALRM, self.handle_timeout
+                )
                 signal.alarm(self.seconds)
         except ValueError as ex:
             logger.warning("timeout can't be used in the current context")
@@ -717,6 +719,8 @@ class SigalrmTimeout:
     ) -> None:
         try:
             signal.alarm(0)
+            if self._previous_handler is not None:
+                signal.signal(signal.SIGALRM, self._previous_handler)
         except ValueError as ex:
             logger.warning("timeout can't be used in the current context")
             logger.exception(ex)
