@@ -223,7 +223,7 @@ def add_types(metadata: MetaData) -> None:
     insert = tag.insert()
     for type_ in ObjectType.__members__:
         with contextlib.suppress(IntegrityError):  # already exists
-            db.session.execute(insert, name=f"type:{type_}", type=TagType.type)
+            db.session.execute(insert, {"name": f"type:{type_}", "type": TagType.type})
 
     add_types_to_charts(metadata, tag, tagged_object, columns)
     add_types_to_dashboards(metadata, tag, tagged_object, columns)
@@ -444,7 +444,7 @@ def add_owners(metadata: MetaData) -> None:
     insert = tag.insert()
     for (id_,) in db.session.execute(ids):
         with contextlib.suppress(IntegrityError):  # already exists
-            db.session.execute(insert, name=f"owner:{id_}", type=TagType.owner)
+            db.session.execute(insert, {"name": f"owner:{id_}", "type": TagType.owner})
     add_owners_to_charts(metadata, tag, tagged_object, columns)
     add_owners_to_dashboards(metadata, tag, tagged_object, columns)
     add_owners_to_saved_queries(metadata, tag, tagged_object, columns)
@@ -482,7 +482,10 @@ def add_favorites(metadata: MetaData) -> None:
     insert = tag.insert()
     for (id_,) in db.session.execute(ids):
         with contextlib.suppress(IntegrityError):  # already exists
-            db.session.execute(insert, name=f"favorited_by:{id_}", type=TagType.type)
+            db.session.execute(
+                insert,
+                {"name": f"favorited_by:{id_}", "type": TagType.type},
+            )
     favstars = (
         select(
             [
