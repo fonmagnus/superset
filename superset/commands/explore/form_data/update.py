@@ -15,7 +15,6 @@
 # specific language governing permissions and limitations
 # under the License.
 import logging
-from abc import ABC
 from typing import Optional
 
 from flask import session
@@ -38,7 +37,7 @@ from superset.utils.schema import validate_json
 logger = logging.getLogger(__name__)
 
 
-class UpdateFormDataCommand(BaseCommand, ABC):
+class UpdateFormDataCommand(BaseCommand):
     def __init__(
         self,
         cmd_params: CommandParameters,
