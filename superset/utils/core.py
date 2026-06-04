@@ -1064,7 +1064,7 @@ def merge_extra_form_data(form_data: dict[str, Any]) -> None:  # noqa: C901
         form_value = getattr(form_data, key, {})
         form_value.update(extra_value)
         if form_value:
-            form_data["key"] = extra_value
+            form_data[key] = extra_value
 
     # map regular extras that apply to form data properties
     for src_key, target_key in EXTRA_FORM_DATA_OVERRIDE_REGULAR_MAPPINGS.items():
