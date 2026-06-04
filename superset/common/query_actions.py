@@ -51,7 +51,7 @@ def _get_datasource(query_context: QueryContext, query_obj: QueryObject) -> Expl
 
 
 def _get_columns(
-    query_context: QueryContext, query_obj: QueryObject, _: bool
+    query_context: QueryContext, query_obj: QueryObject, force_cached: bool
 ) -> dict[str, Any]:
     datasource = _get_datasource(query_context, query_obj)
     return {
@@ -67,7 +67,7 @@ def _get_columns(
 
 
 def _get_timegrains(
-    query_context: QueryContext, query_obj: QueryObject, _: bool
+    query_context: QueryContext, query_obj: QueryObject, force_cached: bool
 ) -> dict[str, Any]:
     datasource = _get_datasource(query_context, query_obj)
     # Use the new get_time_grains() method from Explorable protocol
@@ -78,7 +78,7 @@ def _get_timegrains(
 def _get_query(
     query_context: QueryContext,
     query_obj: QueryObject,
-    _: bool,
+    force_cached: bool,
 ) -> dict[str, Any]:
     datasource = _get_datasource(query_context, query_obj)
     result = {"language": datasource.query_language}
