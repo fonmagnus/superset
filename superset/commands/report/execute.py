@@ -141,7 +141,10 @@ class BaseReportState:
                     recipient.type = ReportRecipientType.SLACKV2
                     slack_recipients = json.loads(recipient.recipient_config_json)
                     # V1 method allowed to use leading `#` in the channel name
-                    channel_names = (slack_recipients["target"] or "").replace("#", "")
+                    channel_names = ",".join(
+                        name.lstrip("#")
+                        for name in (slack_recipients["target"] or "").split(",")
+                    )
                     # we need to ensure that existing reports can also fetch
                     # ids from private channels
                     channels = get_channels_with_search(
