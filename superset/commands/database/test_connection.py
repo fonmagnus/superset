@@ -166,7 +166,7 @@ class TestConnectionDatabaseCommand(BaseCommand):
                     ex_str = str(ex)
 
             if not alive:
-                raise DBAPIError(ex_str or None, None, None)
+                raise DBAPIError(None, None, Exception(ex_str or ""))
 
             # Log successful connection test with engine
             event_logger.log_with_context(
